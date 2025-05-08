@@ -2,3 +2,4 @@
 .venv
 response.json
 letterboxd_data
+.DS_Store
