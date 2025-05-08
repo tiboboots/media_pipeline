@@ -12,18 +12,13 @@ class APICall:
         self.parameters['api_key'] = self.api_key
         self.api_url = f"https://api.themoviedb.org/3/{endpoint}"
     def make_request(self):
-        response = requests.get(url = self.api_url, params = self.parameters)
-        if response.status_code == 200:
-            valid_response = response.json()
-            return valid_response
-        else:
-            print(f"Error. Status code: {response.status_code}")
-            return
-        
-        
-
-
-        
-
-
-
+        try:
+            response = requests.get(url = self.api_url, params = self.parameters)
+            json_response = response.json()
+            return json_response
+        except requests.exceptions.HTTPError as e:
+            print(f"Status code error: {response.status_code}")
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error: {e}")
+        except requests.exceptions.Timeout as t:
+            print(f"Request timeout: {t}")
