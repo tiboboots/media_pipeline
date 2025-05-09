@@ -42,3 +42,15 @@ class APICall:
             print(f"Connection error: {e}")
         except requests.exceptions.Timeout as t:
             print(f"Request timeout: {t}")
+    def delete_data(self):
+        try:
+            response = requests.delete(url = self.api_url, headers = self.headers)
+            json_response = response.json()
+            return json_response
+        except requests.exceptions.HTTPError:
+            print(f"Status code error: {response.status_code}")
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error: {e}")
+        except requests.exceptions.Timeout as t:
+            print(f"Request timeout: {t}")
+        
