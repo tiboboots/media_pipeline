@@ -6,8 +6,8 @@ import json
 load_dotenv()
 
 class APICall:
-    def __init__(self, endpoint, version, params, headers, data = None):
-        self.access_token = os.getenv("tmdb_access_token")
+    def __init__(self, token_type, endpoint, version, params, headers, data = None):
+        self.access_token = os.getenv(token_type)
         self.data = data
         self.file_path = "response.json"
         self.endpoint = endpoint
