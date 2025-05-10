@@ -3,3 +3,5 @@
 response.json
 letterboxd_data
 .DS_Store
+duplicate_movies.json
+unique_movies.json
