@@ -74,12 +74,15 @@ class MovieIDs:
             json.dump(duplicate_movies, dup_movies_json, indent = 4)
             print("Duplicate movies successfully saved.")
 
-    def load_movies(self):
-        with open(self.duplicate_movies_path, "r") as dup_movies_json:
-            multiple_movies = json.load(dup_movies_json)
+    def load_unique_movies(self):
         with open(self.unique_movies_path, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
-        return multiple_movies, unique_movies
+        return unique_movies
+    
+    def load_duplicate_movies(self):
+        with open(self.duplicate_movies_path, "r") as dup_movies_json:
+            duplicate_movies = json.load(dup_movies_json)
+        return duplicate_movies
 
     def get_and_save_movies(self): # Single method to do everything with a single call
         watched_movies = self.get_watched_movies()
