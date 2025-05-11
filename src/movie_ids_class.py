@@ -72,6 +72,11 @@ class MovieIDs:
             json.dump(duplicate_movies, dup_movies_json, indent = 4)
             print("Duplicate movies successfully saved.")
 
+    def get_and_save_movies(self): # Single method to do everything with a single call
+        watched_movies = self.get_watched_movies()
+        unique_movies, duplicate_movies = self.get_movie_ids(watched_movies)
+        self.save_movies(unique_movies, duplicate_movies)
+
     def load_unique_movies(self):
         with open(self.unique_movies_path, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
@@ -82,7 +87,14 @@ class MovieIDs:
             duplicate_movies = json.load(dup_movies_json)
         return duplicate_movies
 
-    def get_and_save_movies(self): # Single method to do everything with a single call
-        watched_movies = self.get_watched_movies()
-        unique_movies, duplicate_movies = self.get_movie_ids(watched_movies)
-        self.save_movies(unique_movies, duplicate_movies)
+    def filter_duplicate_movies(self, watched_movies, duplicate_movies):
+    # Method to filter and return a new dictionary containing only exact title matches,
+    # between watched movies and duplicate versions, thus filtering out any fuzzy matches
+        narrowed_down_duplicate_movies = {}
+        for watched_movie_dict in watched_movies:
+            watched_movie_name = watched_movie_dict["Name"]
+            for dup_movie_id, dup_movie_list in duplicate_movies.items():
+                if watched_movie_name not in dup_movie_list:
+                    continue # Skip all lists where the watched movie name is not found in the list
+                narrowed_down_duplicate_movies[dup_movie_id] = dup_movie_list
+        return narrowed_down_duplicate_movies
