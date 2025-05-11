@@ -27,7 +27,7 @@ class MovieIDs:
 
     def get_movie_ids(self, watched_movies):
         movie_ids_dict = {} # Unique movies and their id's go here
-        duplicate_movies = [] # Any movies with multiple results go here for further processing and filtering later
+        duplicate_movies = {} # Any movies with multiple results go here for further processing and filtering later
 
         for movie_dict in watched_movies:
             movie_name = movie_dict['Name']
@@ -47,12 +47,10 @@ class MovieIDs:
                 # If result list is longer than 1, then there are multiple results for the movie query,
                 # thus we add results to the duplicate_movies list as a dictionary
                 for result in results_list:
-                    dup_movie_dict = {}
                     dup_movie_name = result['title']
                     dup_movie_release_date = result['release_date']
                     dup_movie_id = result['id']
-                    dup_movie_dict[dup_movie_id] = [dup_movie_name, dup_movie_release_date] 
-                    duplicate_movies.append(dup_movie_dict)
+                    duplicate_movies[dup_movie_id] = [dup_movie_name, dup_movie_release_date] 
                 time.sleep(1.0)
                 continue
             # If results list is neither empty nor longer than 1 item, then we have 1 unique result for the movie,
