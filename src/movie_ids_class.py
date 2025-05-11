@@ -43,6 +43,7 @@ class MovieIDs:
                 time.sleep(1.0)
                 continue
             if len(results_list) > 1: 
+                print(f"Multiple results found for {movie_name}, saving all...")
                 # If result list is longer than 1, then there are multiple results for the movie query,
                 # thus we add results to the duplicate_movies list as a dictionary
                 for result in results_list:
@@ -56,6 +57,7 @@ class MovieIDs:
                 continue
             # If results list is neither empty nor longer than 1 item, then we have 1 unique result for the movie,
             # thus we can safely save it and it's id to the movie_ids_dict dictionary
+            print(f"Saving 1 result for {movie_name}...")
             results_dict = results_list[0]
             movie_id = results_dict['id']
             movie_ids_dict[movie_name] = movie_id
