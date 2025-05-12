@@ -25,57 +25,62 @@ class TMDBMovieIDs:
                 watched_movies.append(movie)
         return watched_movies
 
-    def get_movie_ids(self, watched_movies):
-        movie_ids_dict = {} # Unique movies and their id's go here
-        duplicate_movies = {} # Any movies with multiple results go here for further processing and filtering later
+    def get_tmdb_movie_ids(self, watched_movies): 
+        # Method to fetch any matches for watched movies, then filter out any fuzzy matches,
+        # and save the tmdb id's for the exact matches along with the movie names
+
+        raw_tmdb_movie_ids = {} # Results go in this dictionary
 
         for movie_dict in watched_movies:
             movie_name = movie_dict['Name']
             movie_year = movie_dict['Year'] 
             params = {"query": movie_name,
-                    "year": movie_year}
-            
+                    "year": movie_year} # Params object to be used in GET request to tmdb server
+                    
             callone = APICall(self.write_token, 'search/movie', '3', params, {}, None)
             json_response = callone.make_request()
             results_list = json_response['results']
-            if len(results_list) == 0: # If no results are found, then print message and continue to next movie
+            if len(results_list) == 0: # Check length of list. If 0, then no matches were found
                 print(f"No results for {movie_name}")
                 time.sleep(1.0)
                 continue
-            if len(results_list) > 1: 
-                print(f"Multiple results found for {movie_name}, saving all...")
-                # If result list is longer than 1, then there are multiple results for the movie query,
-                # thus we add results to the duplicate_movies list as a dictionary
-                for result in results_list:
-                    dup_movie_name = result['title']
-                    dup_movie_release_date = result['release_date']
-                    dup_movie_id = result['id']
-                    duplicate_movies[dup_movie_id] = [dup_movie_name, dup_movie_release_date] 
+            if len(results_list) == 1: 
+                # If length of results list is 1, then 1 unique match was found for current movie
+                # Save that movie and it's returned tmdb id to the raw_tmdb_movies_ids dictionary
+                print(f"1 unique result for {movie_name}")
+                movie_id = results_list[0]['id']
+                raw_tmdb_movie_ids[movie_id] = movie_name
                 time.sleep(1.0)
                 continue
-            # If results list is neither empty nor longer than 1 item, then we have 1 unique result for the movie,
-            # thus we can safely save it and it's id to the movie_ids_dict dictionary
-            print(f"Saving 1 result for {movie_name}...")
-            results_dict = results_list[0]
-            movie_id = results_dict['id']
-            movie_ids_dict[movie_name] = movie_id
+            # If both above if statements return false, then results list is longer than 1,
+            # thus multiple matches were found for the current movie
+            print(f"Filtering multiple results for {movie_name}")
+            for result_dictionary in results_list:
+                # We want to filter out all fuzzy matches/non-exact matches,
+                # so we iterate over the multiple result dictionaries in the results list
+                # and skip any results/matches where the returned movie's title/name,
+                # was not an exact match to the movie_name used in the GET request
+                returned_movie_name = result_dictionary['title']
+                movie_id_2 = result_dictionary['id']
+                if movie_name != returned_movie_name:
+                    continue
+                # We only save non fuzzy matches to our raw_tmdb_movie_ids dictionary,
+                # and filter out/skip all the fuzzy matches, leaving us with a dictionary containing,
+                # mostly unique matches, besides some edge cases which we will handle separately later
+                raw_tmdb_movie_ids[movie_id_2] = movie_name 
             time.sleep(1.0)
-        return movie_ids_dict, duplicate_movies
-
-    def save_movies(self, unique_movies, duplicate_movies): 
+        return raw_tmdb_movie_ids
+    
+    def save_movies(self, raw_tmdb_movie_ids): 
         # Save results to json files for persistence and further processing + filtering
         with open(self.unique_movies_path, "w") as unique_movies_json:
-            json.dump(unique_movies, unique_movies_json, indent = 4)
+            json.dump(raw_tmdb_movie_ids, unique_movies_json, indent = 4)
             print("Unique movies successfully saved.")
 
-        with open(self.duplicate_movies_path, "w") as dup_movies_json:
-            json.dump(duplicate_movies, dup_movies_json, indent = 4)
-            print("Duplicate movies successfully saved.")
-
-    def get_and_save_movies(self): # Single method to do everything with a single call
+    def get_and_save_movies(self): # Single method to do everything with one call
         watched_movies = self.get_watched_movies()
-        unique_movies, duplicate_movies = self.get_movie_ids(watched_movies)
-        self.save_movies(unique_movies, duplicate_movies)
+        raw_tmdb_movie_ids = self.get_tmdb_movie_ids(watched_movies)
+        self.save_movies(raw_tmdb_movie_ids)
 
     def load_unique_movies(self):
         with open(self.unique_movies_path, "r") as unique_movies_json:
@@ -98,3 +103,4 @@ class TMDBMovieIDs:
                     continue # Skip all lists where the watched movie name is not found in the list
                 narrowed_down_duplicate_movies[dup_movie_id] = dup_movie_list
         return narrowed_down_duplicate_movies
+    
