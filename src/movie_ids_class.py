@@ -75,32 +75,15 @@ class TMDBMovieIDs:
         # Save results to json files for persistence and further processing + filtering
         with open(self.unique_movies_path, "w") as unique_movies_json:
             json.dump(raw_tmdb_movie_ids, unique_movies_json, indent = 4)
-            print("Unique movies successfully saved.")
+            print("Movies successfully saved.")
 
     def get_and_save_movies(self): # Single method to do everything with one call
         watched_movies = self.get_watched_movies()
         raw_tmdb_movie_ids = self.get_tmdb_movie_ids(watched_movies)
         self.save_movies(raw_tmdb_movie_ids)
 
-    def load_unique_movies(self):
+    def load_returned_movies(self):
         with open(self.unique_movies_path, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
         return unique_movies
-    
-    def load_duplicate_movies(self):
-        with open(self.duplicate_movies_path, "r") as dup_movies_json:
-            duplicate_movies = json.load(dup_movies_json)
-        return duplicate_movies
-
-    def filter_duplicate_movies(self, watched_movies, duplicate_movies):
-    # Method to filter and return a new dictionary containing only exact title matches,
-    # between watched movies and duplicate versions, thus filtering out any fuzzy matches
-        narrowed_down_duplicate_movies = {}
-        for watched_movie_dict in watched_movies:
-            watched_movie_name = watched_movie_dict["Name"]
-            for dup_movie_id, dup_movie_list in duplicate_movies.items():
-                if watched_movie_name not in dup_movie_list:
-                    continue # Skip all lists where the watched movie name is not found in the list
-                narrowed_down_duplicate_movies[dup_movie_id] = dup_movie_list
-        return narrowed_down_duplicate_movies
     
