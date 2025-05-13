@@ -12,7 +12,7 @@ class TMDBMovieIDs:
     def __init__(self):
         self.unique_movies_path = "unique_movies.json"
         self.watched_movies_path= "letterboxd_data/watched.csv"
-        self.write_token = "tmdb_write_access_token"
+        self.token_type = "tmdb_read_access_token"
 
     def get_watched_movies(self):
         with open(self.watched_movies_path, "r", encoding = 'utf-8') as movies_csv:
@@ -36,7 +36,7 @@ class TMDBMovieIDs:
             params = {"query": movie_name,
                     "year": movie_year} # Params object to be used in GET request to tmdb server
                     
-            callone = APICall(self.write_token, 'search/movie', '3', params, {}, None)
+            callone = APICall(self.token_type, 'search/movie', '3', params, {}, None)
             json_response = callone.make_request()
             results_list = json_response['results']
             if len(results_list) == 0: # Check length of list. If 0, then no matches were found
