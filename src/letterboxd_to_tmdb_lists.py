@@ -9,6 +9,13 @@ load_dotenv()
 class TMDBCredentials:
     read_access_token = "tmdb_read_access_token"
     write_access_token = "tmdb_write_access_token"
+    account_id = None
+
+    @classmethod
+    def get_account_id(cls):
+        api_call = APICall(cls.read_access_token, 'account', '3', {}, {}, None)
+        json_response = api_call.make_request()
+        cls.account_id = json_response['id']
 
 # Due to limited detail in exported letterboxd data, some manual filtering is required for rare duplicate edge cases,
 # where the name and release year are the exact same.
