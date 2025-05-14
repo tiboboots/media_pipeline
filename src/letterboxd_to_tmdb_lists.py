@@ -99,3 +99,13 @@ class TMDBMovieIDs(TMDBCredentials):
         with open(self.unique_movies_path, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
         return unique_movies
+    
+class TMDBLists(TMDBCredentials):
+    def __init__(self):
+        self.token_type = self.read_access_token
+        self.lists_endpoint = f"/account/{self.account_id}/lists"
+        self.tmdb_list_ids = {}
+
+    def get_list_ids(self):
+        api_call = APICall(self.token_type, self.lists_endpoint, '3', {}, {}, None)
+        json_response = api_call.make_request()
