@@ -6,13 +6,17 @@ from api_call_class import APICall
 
 load_dotenv()
 
+class TMDBCredentials:
+    read_access_token = "tmdb_read_access_token"
+    write_access_token = "tmdb_write_access_token"
+
 # This class is meant to get the TMDB id's for each movie in my letterboxd watched list,
 # so that I can add them to a custom TMDB list, for which I need the id of each movie.
-class TMDBMovieIDs:
+class TMDBMovieIDs(TMDBCredentials):
     def __init__(self):
         self.unique_movies_path = "unique_movies.json"
         self.watched_movies_path= "letterboxd_data/watched.csv"
-        self.token_type = "tmdb_read_access_token"
+        self.token_type = self.read_access_token
 
     def get_watched_movies(self):
         with open(self.watched_movies_path, "r", encoding = 'utf-8') as movies_csv:
