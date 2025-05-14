@@ -10,6 +10,9 @@ class TMDBCredentials:
     read_access_token = "tmdb_read_access_token"
     write_access_token = "tmdb_write_access_token"
 
+# Due to limited detail in exported letterboxd data, some manual filtering is required for rare duplicate edge cases,
+# where the name and release year are the exact same.
+
 # This class is meant to get the TMDB id's for each movie in my letterboxd watched list,
 # so that I can add them to a custom TMDB list, for which I need the id of each movie.
 class TMDBMovieIDs(TMDBCredentials):
