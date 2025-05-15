@@ -103,7 +103,7 @@ class TMDBMovieIDs(TMDBCredentials):
         return unique_movies
     
 class TMDBLists(TMDBCredentials):
-    def get_list_ids(self):
+    def get_all_list_ids(self):
         tmdb_list_ids = {}
         api_call = APICall(self.read_access_token, f"account/{self.account_id}/lists", '3', {}, {}, None)
         json_response = api_call.make_request()
@@ -145,6 +145,3 @@ class TMDBLists(TMDBCredentials):
         api_call = APICall(self.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
         json_response = api_call.send_data()
         print(json_response)
-            
-            
-            
