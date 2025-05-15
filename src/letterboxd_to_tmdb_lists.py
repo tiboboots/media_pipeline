@@ -95,6 +95,7 @@ class TMDBMovieIDs(TMDBCredentials):
         raw_tmdb_movie_ids = self.get_tmdb_movie_ids(watched_movies)
         self.save_movies(raw_tmdb_movie_ids)
 
+    @staticmethod
     def load_returned_movies(self):
         with open(self.unique_movies_path, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
