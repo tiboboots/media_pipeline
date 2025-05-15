@@ -122,7 +122,7 @@ class TMDBLists(TMDBCredentials):
             tmdb_list_ids[this_list_id] = this_list_name
         return tmdb_list_ids
     
-    def add_movies_to_list(self, list_name, tmdb_list_ids):
+    def get_list_id_by_name(self, list_name, tmdb_list_ids):
         list_id = None
         if list_name not in tmdb_list_ids.values():
             print(f"{list_name} does not exist. Check for possible typo's and try again.")
@@ -134,7 +134,9 @@ class TMDBLists(TMDBCredentials):
             # then assign that id to be the list_id variable that we use in our api call
             list_id = id_of_list
             break # End for loop once the list_id has been found
-
+        return list_id
+    
+    def add_movies_to_list(self, list_id):
         movie_ids = TMDBMovieIDs.load_returned_movies(None)
         payload = {'items': []}
         for movie_id in movie_ids:
