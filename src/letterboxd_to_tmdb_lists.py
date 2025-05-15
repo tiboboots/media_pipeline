@@ -9,6 +9,13 @@ load_dotenv()
 class TMDBCredentials:
     read_access_token = "tmdb_read_access_token"
     write_access_token = "tmdb_write_access_token"
+    account_id = None
+
+    @classmethod
+    def get_account_id(cls):
+        api_call = APICall(cls.read_access_token, 'account', '3', {}, {}, None)
+        json_response = api_call.make_request()
+        cls.account_id = json_response['id']
 
 # Due to limited detail in exported letterboxd data, some manual filtering is required for rare duplicate edge cases,
 # where the name and release year are the exact same.
@@ -16,10 +23,9 @@ class TMDBCredentials:
 # This class is meant to get the TMDB id's for each movie in my letterboxd watched list,
 # so that I can add them to a custom TMDB list, for which I need the id of each movie.
 class TMDBMovieIDs(TMDBCredentials):
-    def __init__(self):
-        self.unique_movies_path = "unique_movies.json"
-        self.watched_movies_path= "letterboxd_data/watched.csv"
-        self.token_type = self.read_access_token
+    movie_ids_path = "unique_movies.json"
+    watched_movies_path = "letterboxd_data/watched.csv"
+    token_type = TMDBCredentials.read_access_token
 
     def get_watched_movies(self):
         with open(self.watched_movies_path, "r", encoding = 'utf-8') as movies_csv:
@@ -88,7 +94,56 @@ class TMDBMovieIDs(TMDBCredentials):
         raw_tmdb_movie_ids = self.get_tmdb_movie_ids(watched_movies)
         self.save_movies(raw_tmdb_movie_ids)
 
-    def load_returned_movies(self):
-        with open(self.unique_movies_path, "r") as unique_movies_json:
+    @staticmethod
+    def load_returned_movies(movie_ids_path = None):
+        if movie_ids_path is None:
+            movie_ids_path = TMDBMovieIDs.movie_ids_path # Use the default path if no other path is specified
+        with open(movie_ids_path, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
         return unique_movies
+    
+class TMDBLists(TMDBCredentials):
+    def get_all_list_ids(self):
+        tmdb_list_ids = {}
+        api_call = APICall(self.read_access_token, f"account/{self.account_id}/lists", '3', {}, {}, None)
+        json_response = api_call.make_request()
+        results_list = json_response['results']
+        if len(results_list) == 0:
+            print(f"This user has no lists.")
+            return
+        if len(results_list) == 1:
+            list_id = results_list[0]['id']
+            list_name = results_list[0]['name']
+            tmdb_list_ids[list_id] = list_name
+            return
+        for user_list in results_list:
+            this_list_id = user_list['id']
+            this_list_name = user_list['name']
+            tmdb_list_ids[this_list_id] = this_list_name
+        return tmdb_list_ids
+    
+    def get_list_id_by_name(self, list_name, tmdb_list_ids):
+        list_id = None
+        if list_name not in tmdb_list_ids.values():
+            print(f"{list_name} does not exist. Check for possible typo's and try again.")
+            return # Exit method if the specified list does not exist
+        for id_of_list, name_of_list in tmdb_list_ids.items():
+            if name_of_list != list_name:
+                continue
+            # If user specified list name is equal to name value of an id in the tmdb_list_ids dictionary,
+            # then assign that id to be the list_id variable that we use in our api call
+            list_id = id_of_list
+            break # End for loop once the list_id has been found
+        return list_id
+    
+    def add_movies_to_list(self, list_id):
+        movie_ids = TMDBMovieIDs.load_returned_movies(None)
+        payload = {'items': []}
+        for movie_id in movie_ids:
+            movie_id_dictionary = {}
+            movie_id_dictionary['media_type'] = 'movie' # Create media type key and assign it to be movie, for every movie id
+            movie_id_dictionary['media_id'] = movie_id # Assign movie id key from json file to be the media_id key value
+            payload['items'].append(movie_id_dictionary) # add each dictionary created for each movie id to the items list
+        api_call = APICall(self.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
+        json_response = api_call.send_data()
+        print(json_response)
