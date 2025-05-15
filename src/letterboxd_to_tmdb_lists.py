@@ -105,7 +105,7 @@ class TMDBMovieIDs(TMDBCredentials):
 class TMDBLists(TMDBCredentials):
     def get_list_ids(self):
         tmdb_list_ids = {}
-        api_call = APICall(self.read_access_token, self.lists_endpoint, '3', {}, {}, None)
+        api_call = APICall(self.read_access_token, f"account/{self.account_id}/lists", '3', {}, {}, None)
         json_response = api_call.make_request()
         results_list = json_response['results']
         if len(results_list) == 0:
