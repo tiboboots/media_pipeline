@@ -104,8 +104,22 @@ class TMDBLists(TMDBCredentials):
     def __init__(self):
         self.token_type = self.read_access_token
         self.lists_endpoint = f"/account/{self.account_id}/lists"
-        self.tmdb_list_ids = {}
 
     def get_list_ids(self):
+        tmdb_list_ids = {}
         api_call = APICall(self.token_type, self.lists_endpoint, '3', {}, {}, None)
         json_response = api_call.make_request()
+        results_list = json_response['results']
+        if len(results_list) == 0:
+            print(f"This user has no lists.")
+            return
+        if len(results_list) == 1:
+            list_id = results_list[0]['id']
+            list_name = results_list[0]['name']
+            tmdb_list_ids[list_id] = list_name
+            return
+        for user_list in results_list:
+            this_list_id = user_list['id']
+            this_list_name = user_list['name']
+            tmdb_list_ids[this_list_id] = this_list_name
+        return tmdb_list_ids
