@@ -147,3 +147,8 @@ class TMDBLists(TMDBCredentials):
         api_call = APICall(self.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
         json_response = api_call.send_data()
         print(json_response)
+
+    def get_all_lists_and_add_movies(self, list_name, tmdb_movie_ids_file):
+        tmdb_list_ids = self.get_all_list_ids()
+        list_id = self.get_list_id_by_name(list_name, tmdb_list_ids)
+        self.add_movies_to_list(list_id, tmdb_movie_ids_file)
