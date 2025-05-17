@@ -23,12 +23,14 @@ class TMDBCredentials:
 # This class is meant to get the TMDB id's for each movie in my letterboxd watched list,
 # so that I can add them to a custom TMDB list, for which I need the id of each movie.
 class TMDBMovieIDs(TMDBCredentials):
-    movie_ids_path = "unique_movies.json"
-    watched_movies_path = "letterboxd_data/watched.csv"
     token_type = TMDBCredentials.read_access_token
 
+    def __init__(self, watched_movies_file, tmdb_movie_ids_file):
+        self.watched_movies_file = watched_movies_file
+        self.tmdb_movie_ids_file = tmdb_movie_ids_file
+
     def get_watched_movies(self):
-        with open(self.watched_movies_path, "r", encoding = 'utf-8') as movies_csv:
+        with open(self.watched_movies_file, "r", encoding = 'utf-8') as movies_csv:
             # Add all movies from csv to watched_movies list as a dictionary
             watched_movies = []
             movies = csv.DictReader(movies_csv, delimiter = ";")
@@ -85,7 +87,7 @@ class TMDBMovieIDs(TMDBCredentials):
     
     def save_movies(self, raw_tmdb_movie_ids): 
         # Save results to json files for persistence and further processing + filtering
-        with open(self.unique_movies_path, "w") as unique_movies_json:
+        with open(self.tmdb_movie_ids_file, "w") as unique_movies_json:
             json.dump(raw_tmdb_movie_ids, unique_movies_json, indent = 4)
             print("Movies successfully saved.")
 
@@ -95,10 +97,8 @@ class TMDBMovieIDs(TMDBCredentials):
         self.save_movies(raw_tmdb_movie_ids)
 
     @staticmethod
-    def load_returned_movies(movie_ids_path = None):
-        if movie_ids_path is None:
-            movie_ids_path = TMDBMovieIDs.movie_ids_path # Use the default path if no other path is specified
-        with open(movie_ids_path, "r") as unique_movies_json:
+    def load_returned_movies(tmdb_movie_ids_file):
+        with open(tmdb_movie_ids_file, "r") as unique_movies_json:
             unique_movies = json.load(unique_movies_json)
         return unique_movies
     
@@ -136,8 +136,8 @@ class TMDBLists(TMDBCredentials):
             break # End for loop once the list_id has been found
         return list_id
     
-    def add_movies_to_list(self, list_id):
-        movie_ids = TMDBMovieIDs.load_returned_movies(None)
+    def add_movies_to_list(self, list_id, tmdb_movie_ids_file):
+        movie_ids = TMDBMovieIDs.load_returned_movies(tmdb_movie_ids_file)
         payload = {'items': []}
         for movie_id in movie_ids:
             movie_id_dictionary = {}
