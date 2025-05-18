@@ -137,7 +137,7 @@ class TMDBLists(TMDBCredentials):
             break # End for loop once the list_id has been found
         return list_id
     
-    def check_user_list_input(self, tmdb_list_ids):
+    def get_and_check_user_list_input(self, tmdb_list_ids):
         while True:
             list_names_lower = [name_of_list.lower() for name_of_list in tmdb_list_ids.values()]
             print("All of your TMDB lists:")
@@ -150,7 +150,7 @@ class TMDBLists(TMDBCredentials):
             break
         return user_list
     
-    def add_movies_to_list(self, list_id, tmdb_movie_ids_file):
+    def add_movies_to_list(self, list_name, list_id, tmdb_movie_ids_file):
         movie_ids = TMDBMovieIDs.load_returned_movies(tmdb_movie_ids_file)
         payload = {'items': []}
         for movie_id in movie_ids:
@@ -160,15 +160,8 @@ class TMDBLists(TMDBCredentials):
             payload['items'].append(movie_id_dictionary) # add each dictionary created for each movie id to the items list
         api_call = APICall(self.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
         json_response = api_call.send_data()
-        return json_response
-
-    def get_all_lists_and_add_movies(self, tmdb_movie_ids_file):
-        tmdb_list_ids = self.get_all_list_ids()
-        user_list = self.check_user_list_input(tmdb_list_ids)
-        list_id = self.get_list_id_by_name(user_list, tmdb_list_ids)
-        json_response = self.add_movies_to_list(list_id, tmdb_movie_ids_file)
         if json_response['success'] == True:
-            print(f"Movies successfully added to {user_list.title()}!")
+            print(f"Movies successfully added to {list_name.title()}!")
             return
         status_msg = json_response['status_message']
         print(f"Error: {status_msg}")
