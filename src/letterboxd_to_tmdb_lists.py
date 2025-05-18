@@ -115,7 +115,7 @@ class TMDBLists(TMDBCredentials):
             list_id = results_list[0]['id']
             list_name = results_list[0]['name']
             tmdb_list_ids[list_id] = list_name
-            return
+            return tmdb_list_ids  # Return the dictionary with the one list
         for user_list in results_list:
             this_list_id = user_list['id']
             this_list_name = user_list['name']
@@ -124,17 +124,31 @@ class TMDBLists(TMDBCredentials):
     
     def get_list_id_by_name(self, list_name, tmdb_list_ids):
         list_id = None
-        if list_name not in tmdb_list_ids.values():
+        list_names_lower = [lowercase_list_name.lower() for lowercase_list_name in tmdb_list_ids.values()]
+        if list_name not in list_names_lower:
             print(f"{list_name} does not exist. Check for possible typo's and try again.")
             return # Exit method if the specified list does not exist
         for id_of_list, name_of_list in tmdb_list_ids.items():
-            if name_of_list != list_name:
+            if name_of_list.lower() != list_name:
                 continue
             # If user specified list name is equal to name value of an id in the tmdb_list_ids dictionary,
             # then assign that id to be the list_id variable that we use in our api call
             list_id = id_of_list
             break # End for loop once the list_id has been found
         return list_id
+    
+    def check_user_list_input(self, tmdb_list_ids):
+        while True:
+            list_names_lower = [name_of_list.lower() for name_of_list in tmdb_list_ids.values()]
+            print("All of your TMDB lists:")
+            for list_name in tmdb_list_ids.values():
+                print(f"- {list_name}")
+            user_list = input("Please choose a list to add your movies to: ").lower()
+            if user_list not in list_names_lower:
+                print("Invalid list name. Please choose from one of the above lists.")
+                continue
+            break
+        return user_list
     
     def add_movies_to_list(self, list_id, tmdb_movie_ids_file):
         movie_ids = TMDBMovieIDs.load_returned_movies(tmdb_movie_ids_file)
@@ -148,7 +162,8 @@ class TMDBLists(TMDBCredentials):
         json_response = api_call.send_data()
         print(json_response)
 
-    def get_all_lists_and_add_movies(self, list_name, tmdb_movie_ids_file):
+    def get_all_lists_and_add_movies(self, tmdb_movie_ids_file):
         tmdb_list_ids = self.get_all_list_ids()
-        list_id = self.get_list_id_by_name(list_name, tmdb_list_ids)
+        user_list = self.check_user_list_input(tmdb_list_ids)
+        list_id = self.get_list_id_by_name(user_list, tmdb_list_ids)
         self.add_movies_to_list(list_id, tmdb_movie_ids_file)
