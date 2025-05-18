@@ -160,10 +160,15 @@ class TMDBLists(TMDBCredentials):
             payload['items'].append(movie_id_dictionary) # add each dictionary created for each movie id to the items list
         api_call = APICall(self.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
         json_response = api_call.send_data()
-        print(json_response)
+        return json_response
 
     def get_all_lists_and_add_movies(self, tmdb_movie_ids_file):
         tmdb_list_ids = self.get_all_list_ids()
         user_list = self.check_user_list_input(tmdb_list_ids)
         list_id = self.get_list_id_by_name(user_list, tmdb_list_ids)
-        self.add_movies_to_list(list_id, tmdb_movie_ids_file)
+        json_response = self.add_movies_to_list(list_id, tmdb_movie_ids_file)
+        if json_response['success'] == True:
+            print(f"Movies successfully added to {user_list.title()}!")
+            return
+        status_msg = json_response['status_message']
+        print(f"Error: {status_msg}")
