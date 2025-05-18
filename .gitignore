@@ -1,7 +1,7 @@
 .env
 .venv
 response.json
-letterboxd_data
+movies-data
 .DS_Store
 tmdb_movie_ids.json
 __pycache__
