@@ -15,8 +15,11 @@ class TMDBCredentials:
     def get_account_id(cls):
         api_call = APICall(token_type=cls.read_access_token, endpoint='account', version='3', params={}, headers={})
         json_response = api_call.make_request()
-        cls.account_id = json_response['id']
-
+        if 'id' in json_response:
+            cls.account_id = json_response['id']
+            return
+        print("Error. Could not retrieve account id.")
+    
     @classmethod
     def get_req_token(cls):
         api_call = APICall(token_type=cls.read_access_token, endpoint='auth/request_token', version='4', params={}, headers={})
