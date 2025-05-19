@@ -8,14 +8,23 @@ load_dotenv()
 
 class TMDBCredentials:
     read_access_token = "tmdb_read_access_token"
-    write_access_token = "tmdb_write_access_token"
+    write_access_token = None
     account_id = None
 
     @classmethod
     def get_account_id(cls):
-        api_call = APICall(cls.read_access_token, 'account', '3', {}, {}, None)
+        api_call = APICall(token_type=cls.read_access_token, endpoint='account', version='3', params={}, headers={})
         json_response = api_call.make_request()
         cls.account_id = json_response['id']
+
+    @classmethod
+    def get_req_token(cls):
+        api_call = APICall(token_type=cls.read_access_token, endpoint='auth/request_token', version='4', params={}, headers={})
+        response = api_call.send_data()
+        if response['success'] == True:
+            request_token = response['request_token']
+            return request_token
+        print(f"Error: {response['status_message']}")
 
 # Due to limited detail in exported letterboxd data, some manual filtering is required for rare duplicate edge cases,
 # where the name and release year are the exact same.
