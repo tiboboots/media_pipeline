@@ -1,15 +1,20 @@
 import csv
 import time
-from dotenv import load_dotenv
 import json
+import yaml
 from api_call_class import APICall
 
-load_dotenv()
-
 class TMDBCredentials:
-    read_access_token = "tmdb_read_access_token"
+    read_access_token = None
     write_access_token = None
     account_id = None
+
+    @classmethod
+    def get_config(cls):
+        with open("settings.yaml", "r") as config_yml:
+            config_settings = yaml.safe_load(config_yml)
+        cls.read_access_token = config_settings['tmdb_read_access_token']
+        return config_settings
 
     @classmethod
     def get_account_id(cls):
@@ -17,26 +22,13 @@ class TMDBCredentials:
         json_response = api_call.make_request()
         if 'id' in json_response:
             cls.account_id = json_response['id']
+            print(f"Successfully retrived account id: {cls.account_id}")
             return
         print("Error. Could not retrieve account id.")
-    
-    @classmethod
-    def get_req_token(cls):
-        api_call = APICall(token_type=cls.read_access_token, endpoint='auth/request_token', version='4', params={}, headers={})
-        response = api_call.send_data()
-        if response['success'] == True:
-            request_token = response['request_token']
-            return request_token
-        print(f"Error: {response['status_message']}")
 
-# Due to limited detail in exported letterboxd data, some manual filtering is required for rare duplicate edge cases,
-# where the name and release year are the exact same.
-
-# This class is meant to get the TMDB id's for each movie in my letterboxd watched list,
-# so that I can add them to a custom TMDB list, for which I need the id of each movie.
+# This class is meant to get the TMDB id's for each movie in the watched list,
+# so that we can add them to a custom TMDB list, for which we need the id of each movie.
 class TMDBMovieIDs(TMDBCredentials):
-    token_type = TMDBCredentials.read_access_token
-
     def __init__(self, watched_movies_file, tmdb_movie_ids_file):
         self.watched_movies_file = watched_movies_file
         self.tmdb_movie_ids_file = tmdb_movie_ids_file
@@ -63,7 +55,7 @@ class TMDBMovieIDs(TMDBCredentials):
             params = {"query": movie_name,
                     "year": movie_year} # Params object to be used in GET request to tmdb server
                     
-            callone = APICall(self.token_type, 'search/movie', '3', params, {}, None)
+            callone = APICall(TMDBCredentials.read_access_token, 'search/movie', '3', params, {}, None)
             json_response = callone.make_request()
             results_list = json_response['results']
             if len(results_list) == 0: # Check length of list. If 0, then no matches were found
