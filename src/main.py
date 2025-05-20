@@ -34,7 +34,8 @@ my_lists = TMDBLists() # Create TMDBLists instance
 
 all_list_ids = my_lists.get_all_list_ids() # Get the id's for all the user's lists, and their names
 
-list_name = my_lists.get_and_check_user_list_input(tmdb_list_ids = all_list_ids) # Ask user to choose a list to add to
+# Ask user to choose a list to add movies to, return that list for later use
+list_name = my_lists.get_and_check_user_list_input(tmdb_list_ids = all_list_ids)
 
 movie_ids = TMDBMovieIDs(watched_movies_file, tmdb_movie_ids_file) # Create TMBDMovieIDs object
 
