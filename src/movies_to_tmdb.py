@@ -208,4 +208,4 @@ class TMDBLists(TMDBCredentials):
             print(f"Movies successfully added to {list_name.title()}!")
             return
         status_msg = json_response['status_message']
-        print(f"Error: {status_msg}")
+        print(f"Error adding movies to {list_name} list: {status_msg}")
