@@ -25,6 +25,16 @@ class TMDBCredentials:
             print(f"Successfully retrived account id: {cls.account_id}")
             return
         print("Error. Could not retrieve account id.")
+    
+    @classmethod
+    def get_req_token(cls):
+        api_call = APICall(cls.read_access_token, endpoint="auth/request_token", version='4', params={}, headers={})
+        response = api_call.send_data()
+        if response['success'] == True:
+            request_token = response['request_token']
+            print("Successfully retrieved request token")
+            return request_token
+        print(f"Error: {response['status_message']}")
 
 # This class is meant to get the TMDB id's for each movie in the watched list,
 # so that we can add them to a custom TMDB list, for which we need the id of each movie.
