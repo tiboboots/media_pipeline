@@ -60,7 +60,7 @@ class TMDBCredentials:
             print("Saved access token to yaml config file.")
 
     @classmethod
-    def get_credentials(cls, config_settings):
+    def get_tokens(cls, config_settings):
         request_token = cls.get_req_token()
         cls.approve_req_token(request_token)
         access_token = cls.get_access_token(request_token)
