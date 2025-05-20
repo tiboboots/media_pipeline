@@ -34,7 +34,23 @@ class TMDBCredentials:
             request_token = response['request_token']
             print("Successfully retrieved request token")
             return request_token
-        print(f"Error: {response['status_message']}")
+        print(f"Error retrieving request token: {response['status_message']}")
+
+    @classmethod
+    def approve_req_token(cls, request_token):
+        print(f"Approve your request token by visiting: https://www.themoviedb.org/auth/access?request_token={request_token}")
+        input("Press enter when finished to continue:")
+
+    @classmethod
+    def get_access_token(cls, request_token):
+        payload = {"request_token": request_token}
+        api_call = APICall(cls.read_access_token, "auth/access_token", '4', {}, {}, data=payload)
+        response = api_call.send_data()
+        if response['success'] == True:
+            access_token = response['access_token']
+            print("Successfully retrieved access token")
+            return access_token
+        print(f"Error retrieving access token: {response['status_message']}")
 
 # This class is meant to get the TMDB id's for each movie in the watched list,
 # so that we can add them to a custom TMDB list, for which we need the id of each movie.
