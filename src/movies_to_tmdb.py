@@ -64,6 +64,7 @@ class TMDBCredentials:
         request_token = cls.get_req_token()
         cls.approve_req_token(request_token)
         access_token = cls.get_access_token(request_token)
+        cls.write_access_token = access_token
         cls.update_config(config_settings, access_token)
 
 # This class is meant to get the TMDB id's for each movie in the watched list,
