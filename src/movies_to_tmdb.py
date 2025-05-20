@@ -148,9 +148,10 @@ class TMDBMovieIDs(TMDBCredentials):
         return unique_movies
     
 class TMDBLists(TMDBCredentials):
-    def get_all_list_ids(self):
+    @classmethod
+    def get_all_list_ids(cls):
         tmdb_list_ids = {}
-        api_call = APICall(self.read_access_token, f"account/{self.account_id}/lists", '3', {}, {}, None)
+        api_call = APICall(cls.read_access_token, f"account/{cls.account_id}/lists", '3', {}, {}, None)
         json_response = api_call.make_request()
         results_list = json_response['results']
         if len(results_list) == 0:
@@ -167,7 +168,8 @@ class TMDBLists(TMDBCredentials):
             tmdb_list_ids[this_list_id] = this_list_name
         return tmdb_list_ids
     
-    def get_list_id_by_name(self, list_name, tmdb_list_ids):
+    @staticmethod
+    def get_list_id_by_name(list_name, tmdb_list_ids):
         list_id = None
         list_names_lower = [lowercase_list_name.lower() for lowercase_list_name in tmdb_list_ids.values()]
         if list_name not in list_names_lower:
@@ -182,7 +184,8 @@ class TMDBLists(TMDBCredentials):
             break # End for loop once the list_id has been found
         return list_id
     
-    def get_and_check_user_list_input(self, tmdb_list_ids):
+    @staticmethod
+    def get_and_check_user_list_input(tmdb_list_ids):
         while True:
             list_names_lower = [name_of_list.lower() for name_of_list in tmdb_list_ids.values()]
             print("All of your TMDB lists:")
@@ -195,7 +198,8 @@ class TMDBLists(TMDBCredentials):
             break
         return user_list
     
-    def add_movies_to_list(self, list_name, list_id, tmdb_movie_ids_file):
+    @classmethod
+    def add_movies_to_list(cls, list_name, list_id, tmdb_movie_ids_file):
         movie_ids = TMDBMovieIDs.load_returned_movies(tmdb_movie_ids_file)
         payload = {'items': []}
         for movie_id in movie_ids:
@@ -203,7 +207,7 @@ class TMDBLists(TMDBCredentials):
             movie_id_dictionary['media_type'] = 'movie' # Create media type key and assign it to be movie, for every movie id
             movie_id_dictionary['media_id'] = movie_id # Assign movie id key from json file to be the media_id key value
             payload['items'].append(movie_id_dictionary) # add each dictionary created for each movie id to the items list
-        api_call = APICall(self.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
+        api_call = APICall(cls.write_access_token, f"list/{list_id}/items", '4', {}, {}, data = payload)
         json_response = api_call.send_data()
         if json_response['success'] == True:
             print(f"Movies successfully added to {list_name.title()}!")
