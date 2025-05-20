@@ -14,6 +14,7 @@ class TMDBCredentials:
         with open("settings.yaml", "r") as config_yml:
             config_settings = yaml.safe_load(config_yml)
         cls.read_access_token = config_settings['tmdb_read_access_token']
+        cls.write_access_token = config_settings['tmdb_write_access_token']
         return config_settings
 
     @classmethod
