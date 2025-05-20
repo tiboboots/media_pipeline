@@ -1,13 +1,9 @@
 import requests
-from dotenv import load_dotenv
-import os
 import json
-
-load_dotenv()
 
 class APICall:
     def __init__(self, token_type, endpoint, version, params, headers, data = None):
-        self.access_token = os.getenv(token_type)
+        self.access_token = token_type
         self.data = data
         self.file_path = "response.json"
         self.endpoint = endpoint

@@ -1,30 +1,75 @@
 import csv
 import time
-from dotenv import load_dotenv
 import json
+import yaml
 from api_call_class import APICall
 
-load_dotenv()
-
 class TMDBCredentials:
-    read_access_token = "tmdb_read_access_token"
-    write_access_token = "tmdb_write_access_token"
+    read_access_token = None
+    write_access_token = None
     account_id = None
 
     @classmethod
+    def get_config(cls):
+        with open("settings.yaml", "r") as config_yml:
+            config_settings = yaml.safe_load(config_yml)
+        cls.read_access_token = config_settings['tmdb_read_access_token']
+        return config_settings
+
+    @classmethod
     def get_account_id(cls):
-        api_call = APICall(cls.read_access_token, 'account', '3', {}, {}, None)
+        api_call = APICall(token_type=cls.read_access_token, endpoint='account', version='3', params={}, headers={})
         json_response = api_call.make_request()
-        cls.account_id = json_response['id']
+        if 'id' in json_response:
+            cls.account_id = json_response['id']
+            print(f"Successfully retrived account id: {cls.account_id}")
+            return
+        print("Error. Could not retrieve account id.")
+    
+    @classmethod
+    def get_req_token(cls):
+        api_call = APICall(cls.read_access_token, endpoint="auth/request_token", version='4', params={}, headers={})
+        response = api_call.send_data()
+        if response['success'] == True:
+            request_token = response['request_token']
+            print("Successfully retrieved request token")
+            return request_token
+        print(f"Error retrieving request token: {response['status_message']}")
 
-# Due to limited detail in exported letterboxd data, some manual filtering is required for rare duplicate edge cases,
-# where the name and release year are the exact same.
+    @classmethod
+    def approve_req_token(cls, request_token):
+        print(f"Approve your request token by visiting: https://www.themoviedb.org/auth/access?request_token={request_token}")
+        input("Press enter when finished to continue:")
 
-# This class is meant to get the TMDB id's for each movie in my letterboxd watched list,
-# so that I can add them to a custom TMDB list, for which I need the id of each movie.
+    @classmethod
+    def get_access_token(cls, request_token):
+        payload = {"request_token": request_token}
+        api_call = APICall(cls.read_access_token, "auth/access_token", '4', {}, {}, data=payload)
+        response = api_call.send_data()
+        if response['success'] == True:
+            access_token = response['access_token']
+            print("Successfully retrieved access token")
+            return access_token
+        print(f"Error retrieving access token: {response['status_message']}")
+
+    @staticmethod
+    def update_config(config_settings, access_token):
+        config_settings['tmdb_write_access_token'] = access_token
+        with open("settings.yaml", "w") as config_yml:
+            yaml.safe_dump(config_settings, config_yml)
+            print("Saved access token to yaml config file.")
+
+    @classmethod
+    def get_tokens(cls, config_settings):
+        request_token = cls.get_req_token()
+        cls.approve_req_token(request_token)
+        access_token = cls.get_access_token(request_token)
+        cls.write_access_token = access_token
+        cls.update_config(config_settings, access_token)
+
+# This class is meant to get the TMDB id's for each movie in the watched list,
+# so that we can add them to a custom TMDB list, for which we need the id of each movie.
 class TMDBMovieIDs(TMDBCredentials):
-    token_type = TMDBCredentials.read_access_token
-
     def __init__(self, watched_movies_file, tmdb_movie_ids_file):
         self.watched_movies_file = watched_movies_file
         self.tmdb_movie_ids_file = tmdb_movie_ids_file
@@ -51,7 +96,7 @@ class TMDBMovieIDs(TMDBCredentials):
             params = {"query": movie_name,
                     "year": movie_year} # Params object to be used in GET request to tmdb server
                     
-            callone = APICall(self.token_type, 'search/movie', '3', params, {}, None)
+            callone = APICall(TMDBCredentials.read_access_token, 'search/movie', '3', params, {}, None)
             json_response = callone.make_request()
             results_list = json_response['results']
             if len(results_list) == 0: # Check length of list. If 0, then no matches were found
@@ -164,4 +209,4 @@ class TMDBLists(TMDBCredentials):
             print(f"Movies successfully added to {list_name.title()}!")
             return
         status_msg = json_response['status_message']
-        print(f"Error: {status_msg}")
+        print(f"Error adding movies to {list_name} list: {status_msg}")
