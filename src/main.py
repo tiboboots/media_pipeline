@@ -9,27 +9,6 @@ if TMDBCredentials.write_access_token is None: # Check if write access token has
 
 TMDBCredentials.get_account_id() # Get users account id once tokens and credentials have been set
 
-script_path = Path(__file__) # Get path to script
-
-project_directory = script_path.parent.parent # Get path to project root directory relative to script location at runtime
-
-watched_movies_file = project_directory / "movies-data" / "watched.csv" # Build path for watched movies csv file
-
-tmdb_movie_ids_file = project_directory / "tmdb_movie_ids.json" # Build path for movie ids json file 
-
-movies_dir = project_directory / "movies-data" # Build path to the movies-data directory
-
-if not movies_dir.exists():
-    print(f"{movies_dir} does not exist. Please create the movies-data directory first.")
-    print("Then add a csv file containing your watched movies list to it. Try again afterwards.")
-    sys.exit(1)
-
-if not watched_movies_file.exists():
-    print(f"No watched movies csv file found at {watched_movies_file}")
-    print(f"There should be a csv file found in the movies-data directory containing your watched movies.")
-    print(f"Please try again once you have added the file.")
-    sys.exit(1)
-
 my_lists = TMDBLists() # Create TMDBLists instance
 
 all_list_ids = my_lists.get_all_list_ids() # Get the id's for all the user's lists, and their names
