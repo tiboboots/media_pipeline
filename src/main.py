@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from movies_to_tmdb import TMDBMovieIDs, TMDBLists, TMDBCredentials
 
@@ -16,9 +15,9 @@ all_list_ids = my_lists.get_all_list_ids() # Get the id's for all the user's lis
 # Ask user to choose a list to add movies to, return that list for later use
 list_name = my_lists.get_and_check_user_list_input(tmdb_list_ids = all_list_ids)
 
-movie_ids = TMDBMovieIDs() # Create TMBDMovieIDs object
+TMDBMovieIDs.get_paths_config() # Set paths to users movies csv file and tmdb_movie_ids json file
 
-movie_ids.get_and_save_movies() # Get all tmdb id's for movies in watched.csv file and save them locally
+TMDBMovieIDs.get_and_save_movies() # Get all tmdb id's for movies in watched.csv file and save them locally
 
 # Use list name specified by user, saved as the list_name variable, to get the id for that list
 list_id = my_lists.get_list_id_by_name(list_name = list_name, tmdb_list_ids = all_list_ids)
