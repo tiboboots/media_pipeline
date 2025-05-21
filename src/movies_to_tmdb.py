@@ -92,7 +92,8 @@ class TMDBMovieIDs(TMDBCredentials):
                 watched_movies.append(movie)
         return watched_movies
 
-    def get_tmdb_movie_ids(self, watched_movies): 
+    @staticmethod
+    def get_tmdb_movie_ids(watched_movies): 
         # Method to fetch any matches for watched movies, then filter out any fuzzy matches,
         # and save the tmdb id's for the exact matches along with the movie names
 
@@ -138,22 +139,24 @@ class TMDBMovieIDs(TMDBCredentials):
             time.sleep(1.0)
         return raw_tmdb_movie_ids
     
-    def save_movies(self, raw_tmdb_movie_ids): 
+    @classmethod
+    def save_movies(cls, raw_tmdb_movie_ids): 
         # Save results to json files for persistence and further processing + filtering
-        with open(self.tmdb_movie_ids_file, "w") as unique_movies_json:
+        with open(cls.tmdb_movie_ids_file, "w") as unique_movies_json:
             json.dump(raw_tmdb_movie_ids, unique_movies_json, indent = 4)
             print("Movies successfully saved.")
 
-    def get_and_save_movies(self): # Single method to do everything with one call
-        watched_movies = self.get_watched_movies()
-        raw_tmdb_movie_ids = self.get_tmdb_movie_ids(watched_movies)
-        self.save_movies(raw_tmdb_movie_ids)
+    @classmethod
+    def get_and_save_movies(cls): # Single method to do everything with one call
+        watched_movies = cls.get_watched_movies()
+        raw_tmdb_movie_ids = cls.get_tmdb_movie_ids(watched_movies)
+        cls.save_movies(raw_tmdb_movie_ids)
 
-    @staticmethod
-    def load_returned_movies(tmdb_movie_ids_file):
-        with open(tmdb_movie_ids_file, "r") as unique_movies_json:
-            unique_movies = json.load(unique_movies_json)
-        return unique_movies
+    @classmethod
+    def load_returned_movie_ids(cls):
+        with open(cls.tmdb_movie_ids_file, "r") as movie_ids_json:
+            movie_ids = json.load(movie_ids_json)
+        return movie_ids
     
 class TMDBLists(TMDBCredentials):
     @classmethod
