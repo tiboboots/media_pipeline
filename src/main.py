@@ -1,4 +1,3 @@
-from pathlib import Path
 from movies_to_tmdb import TMDBMovieIDs, TMDBLists, TMDBCredentials, FilePaths
 
 config_secrets = TMDBCredentials.get_secrets_config() # Get yaml config file
