@@ -10,12 +10,12 @@ class TMDBCredentials:
     account_id = None
 
     @classmethod
-    def get_config(cls):
-        with open("settings.yaml", "r") as config_yml:
-            config_settings = yaml.safe_load(config_yml)
-        cls.read_access_token = config_settings['tmdb_read_access_token']
-        cls.write_access_token = config_settings['tmdb_write_access_token']
-        return config_settings
+    def get_secrets_config(cls):
+        with open("secrets.yaml", "r") as config_yml:
+            config_secrets = yaml.safe_load(config_yml)
+        cls.read_access_token = config_secrets['tmdb_read_access_token']
+        cls.write_access_token = config_secrets['tmdb_write_access_token']
+        return config_secrets
 
     @classmethod
     def get_account_id(cls):
@@ -54,19 +54,19 @@ class TMDBCredentials:
         print(f"Error retrieving access token: {response['status_message']}")
 
     @staticmethod
-    def update_config(config_settings, access_token):
-        config_settings['tmdb_write_access_token'] = access_token
-        with open("settings.yaml", "w") as config_yml:
-            yaml.safe_dump(config_settings, config_yml)
+    def update_config(config_secrets, access_token):
+        config_secrets['tmdb_write_access_token'] = access_token
+        with open("secrets.yaml", "w") as config_yml:
+            yaml.safe_dump(config_secrets, config_yml)
             print("Saved access token to yaml config file.")
 
     @classmethod
-    def get_tokens(cls, config_settings):
+    def get_tokens(cls, config_secrets):
         request_token = cls.get_req_token()
         cls.approve_req_token(request_token)
         access_token = cls.get_access_token(request_token)
         cls.write_access_token = access_token
-        cls.update_config(config_settings, access_token)
+        cls.update_config(config_secrets, access_token)
 
 # This class is meant to get the TMDB id's for each movie in the watched list,
 # so that we can add them to a custom TMDB list, for which we need the id of each movie.
