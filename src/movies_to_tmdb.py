@@ -2,6 +2,7 @@ import csv
 import time
 import json
 import yaml
+from pathlib import Path
 from api_call_class import APICall
 
 class TMDBCredentials:
@@ -68,19 +69,47 @@ class TMDBCredentials:
         cls.write_access_token = access_token
         cls.update_config(config_secrets, access_token)
 
-# This class is meant to get the TMDB id's for each movie in the watched list,
-# so that we can add them to a custom TMDB list, for which we need the id of each movie.
-class TMDBMovieIDs(TMDBCredentials):
+class FilePaths:
     tmdb_movie_ids_file = None
     movies_file = None
 
-    @classmethod
-    def set_file_paths(cls):
+    @staticmethod
+    def load_paths_yaml():
         with open("paths.yaml", "r") as paths_yml:
             paths = yaml.safe_load(paths_yml)
-        cls.movies_file = paths['movies_file']
-        cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
+        return paths
+        
+    @classmethod
+    def get_user_movies_path(cls, paths):
+        while True:
+            movies_path = Path(input("Please enter the full path to your movies csv file: ").strip())
+            # Check if the file in the user provided path exists or not, or if it's a valid csv file
+            if not movies_path.exists():
+                print(f"{movies_path} does not exist. Please check the path again.")
+                continue
+            if movies_path.suffix.lower() != ".csv":
+                print(f"{movies_path} does not contain a valid csv file. File containing movies must be a csv file. Try again.")
+                continue
+            break
+        # If file does exist and is a csv file, then we update the movies_file class attribute to equal the user input path,
+        # and we save the path to the movies_file field in the yaml file for persistence and future runs
+        cls.movies_file = movies_path
+        paths['movies_file'] = str(movies_path)
+        with open("paths.yaml", "w") as paths_yml:
+            yaml.safe_dump(paths, paths_yml)
+            print(f"Saved movies csv file path to paths.yaml file")
 
+    @classmethod
+    def set_file_paths(cls, paths):
+        cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
+        if paths['movies_file'] is not None:
+            cls.movies_file = paths['movies_file']
+            return
+        cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
+
+# This class is meant to get the TMDB id's for each movie in the watched list,
+# so that we can add them to a custom TMDB list, for which we need the id of each movie.
+class TMDBMovieIDs(TMDBCredentials, FilePaths):  
     @classmethod
     def get_watched_movies(cls):
         with open(cls.movies_file,"r", encoding = 'utf-8') as movies_csv:
