@@ -71,12 +71,19 @@ class TMDBCredentials:
 # This class is meant to get the TMDB id's for each movie in the watched list,
 # so that we can add them to a custom TMDB list, for which we need the id of each movie.
 class TMDBMovieIDs(TMDBCredentials):
-    def __init__(self, watched_movies_file, tmdb_movie_ids_file):
-        self.watched_movies_file = watched_movies_file
-        self.tmdb_movie_ids_file = tmdb_movie_ids_file
+    tmdb_movie_ids_file = None
+    movies_file = None
 
-    def get_watched_movies(self):
-        with open(self.watched_movies_file, "r", encoding = 'utf-8') as movies_csv:
+    @classmethod
+    def get_paths_config(cls):
+        with open("paths.yaml", "r") as paths_yml:
+            paths = yaml.safe_load(paths_yml)
+        cls.movies_file = paths['movies_file']
+        cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
+
+    @classmethod
+    def get_watched_movies(cls):
+        with open(cls.movies_file,"r", encoding = 'utf-8') as movies_csv:
             # Add all movies from csv to watched_movies list as a dictionary
             watched_movies = []
             movies = csv.DictReader(movies_csv, delimiter = ";")
