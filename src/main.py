@@ -15,7 +15,7 @@ all_list_ids = my_lists.get_all_list_ids() # Get the id's for all the user's lis
 # Ask user to choose a list to add movies to, return that list for later use
 list_name = my_lists.get_and_check_user_list_input(tmdb_list_ids = all_list_ids)
 
-TMDBMovieIDs.get_paths_config() # Set paths to users movies csv file and tmdb_movie_ids json file
+TMDBMovieIDs.set_file_paths() # Set paths to users movies csv file and tmdb_movie_ids json file
 
 TMDBMovieIDs.get_and_save_movies() # Get all tmdb id's for movies in watched.csv file and save them locally
 

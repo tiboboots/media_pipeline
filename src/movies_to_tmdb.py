@@ -75,7 +75,7 @@ class TMDBMovieIDs(TMDBCredentials):
     movies_file = None
 
     @classmethod
-    def get_paths_config(cls):
+    def set_file_paths(cls):
         with open("paths.yaml", "r") as paths_yml:
             paths = yaml.safe_load(paths_yml)
         cls.movies_file = paths['movies_file']
