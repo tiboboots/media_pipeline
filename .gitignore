@@ -1,4 +1,4 @@
-settings.yaml
+secrets.yaml
 .venv
 response.json
 movies-data
