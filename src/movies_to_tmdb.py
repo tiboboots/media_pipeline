@@ -102,10 +102,19 @@ class FilePaths:
     @classmethod
     def set_file_paths(cls, paths):
         cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
-        if paths['movies_file'] is not None:
-            cls.movies_file = paths['movies_file']
+        if paths['movies_file'] is None:
+            cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
             return
-        cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
+        movies_file = Path(paths['movies_file'])
+        # If movies_file field is not empty but path is no longer valid, then ask user to specify new path,
+        # assuming they most likely moved the file or re-named
+        if not movies_file.exists():
+            print(f"{movies_file} is no longer a valid path.")
+            print("This is most likely because you have moved the location of your movies csv file or renamed it.")
+            print("You will now be asked to specify the new full path to your movies csv file's new location.")
+            cls.get_user_movies_path(paths)
+        else:
+            cls.movies_file = str(movies_file)
 
 # This class is meant to get the TMDB id's for each movie in the watched list,
 # so that we can add them to a custom TMDB list, for which we need the id of each movie.
