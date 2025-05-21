@@ -2,10 +2,10 @@ import sys
 from pathlib import Path
 from movies_to_tmdb import TMDBMovieIDs, TMDBLists, TMDBCredentials
 
-config_settings = TMDBCredentials.get_config() # Get yaml config file
+config_secrets = TMDBCredentials.get_secrets_config() # Get yaml config file
 
 if TMDBCredentials.write_access_token is None: # Check if write access token has been set
-    TMDBCredentials.get_tokens(config_settings) # If not, then fetch the users write acccess token
+    TMDBCredentials.get_tokens(config_secrets) # If not, then fetch the users write acccess token
 
 TMDBCredentials.get_account_id() # Get users account id once tokens and credentials have been set
 
