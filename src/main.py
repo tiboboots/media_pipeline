@@ -37,7 +37,7 @@ all_list_ids = my_lists.get_all_list_ids() # Get the id's for all the user's lis
 # Ask user to choose a list to add movies to, return that list for later use
 list_name = my_lists.get_and_check_user_list_input(tmdb_list_ids = all_list_ids)
 
-movie_ids = TMDBMovieIDs(watched_movies_file, tmdb_movie_ids_file) # Create TMBDMovieIDs object
+movie_ids = TMDBMovieIDs() # Create TMBDMovieIDs object
 
 movie_ids.get_and_save_movies() # Get all tmdb id's for movies in watched.csv file and save them locally
 
@@ -45,4 +45,4 @@ movie_ids.get_and_save_movies() # Get all tmdb id's for movies in watched.csv fi
 list_id = my_lists.get_list_id_by_name(list_name = list_name, tmdb_list_ids = all_list_ids)
 
 # Add all movies from user watched list csv file to the specified list, using it's id
-my_lists.add_movies_to_list(list_name = list_name, list_id = list_id, tmdb_movie_ids_file = tmdb_movie_ids_file)
+my_lists.add_movies_to_list(list_name = list_name, list_id = list_id)
