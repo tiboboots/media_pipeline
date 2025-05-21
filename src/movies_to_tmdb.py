@@ -210,8 +210,8 @@ class TMDBLists(TMDBCredentials):
         return user_list
     
     @classmethod
-    def add_movies_to_list(cls, list_name, list_id, tmdb_movie_ids_file):
-        movie_ids = TMDBMovieIDs.load_returned_movies(tmdb_movie_ids_file)
+    def add_movies_to_list(cls, list_name, list_id):
+        movie_ids = TMDBMovieIDs.load_returned_movie_ids()
         payload = {'items': []}
         for movie_id in movie_ids:
             movie_id_dictionary = {}
