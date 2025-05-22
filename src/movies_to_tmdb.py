@@ -26,7 +26,7 @@ class TMDBCredentials:
         json_response = api_call.make_request()
         if 'id' in json_response:
             cls.account_id = json_response['id']
-            print(f"Successfully retrived account id: {cls.account_id}")
+            print(f"Successfully retrived account id")
             return
         print("Error. Could not retrieve account id.")
     
