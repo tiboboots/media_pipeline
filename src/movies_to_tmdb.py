@@ -72,7 +72,7 @@ class TMDBCredentials:
         cls.update_config(config_secrets, access_token)
 
 class FilePaths:
-    tmdb_movie_ids_file = None
+    tmdb_movie_ids_file = "tmdb_movie_ids_file.json"
     movies_file = None
 
     @staticmethod
@@ -101,7 +101,6 @@ class FilePaths:
 
     @classmethod
     def set_file_paths(cls, paths):
-        cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
         if not paths['movies_file']:
             input("Press enter to choose your csv file containing your movies: ")
             cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
