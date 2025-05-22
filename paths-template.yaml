@@ -1,0 +1,4 @@
+movies_file:
+tmdb_movie_ids_file: 
+# tmdb_movie_ids_file will be automatically filled with the correct file name and path when you run the script,
+# so you can leave it alone.
