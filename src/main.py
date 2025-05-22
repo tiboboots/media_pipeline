@@ -18,7 +18,7 @@ paths = FilePaths.load_paths_yaml() # Load the paths.yaml file to get all file p
 # then user will be prompted to specify the path to their csv file containing their movies, which is then saved
 TMDBMovieIDs.set_file_paths(paths) 
 
-TMDBMovieIDs.get_and_save_movies() # Get all tmdb id's for movies in watched.csv file and save them locally
+TMDBMovieIDs.get_and_save_movies() # Get all tmdb id's for movies in csv file and save them locally
 
 # Use list name specified by user, saved as the list_name variable, to get the id for that list
 list_id = TMDBLists.get_list_id_by_name(list_name = list_name, tmdb_list_ids = all_list_ids)

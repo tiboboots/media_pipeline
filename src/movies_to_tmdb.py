@@ -4,6 +4,8 @@ import json
 import yaml
 from pathlib import Path
 from api_call_class import APICall
+from PyQt5.QtWidgets import QApplication, QFileDialog
+import sys
 
 class TMDBCredentials:
     read_access_token = None
@@ -81,20 +83,18 @@ class FilePaths:
         
     @classmethod
     def get_user_movies_path(cls, paths):
-        while True:
-            movies_path = Path(input("Please enter the full path to your movies csv file: ").strip())
-            # Check if the file in the user provided path exists or not, or if it's a valid csv file
-            if not movies_path.exists():
-                print(f"{movies_path} does not exist. Please check the path again.")
-                continue
-            if movies_path.suffix.lower() != ".csv":
-                print(f"{movies_path} does not contain a valid csv file. File containing movies must be a csv file. Try again.")
-                continue
-            break
-        # If file does exist and is a csv file, then we update the movies_file class attribute to equal the user input path,
+        app = QApplication(sys.argv)
+        # Open native file explorer, allowing users to easily select their csv file.
+        # Path to the file is returned and saved in the movies_csv_path variable
+        movies_csv_path, _ = QFileDialog.getOpenFileName(None, "", "", "(*.csv)") 
+        app.exit() # Stop the QT library from continuing to use system recources after it's job is done
+        if not movies_csv_path:
+            print("No file selected. Exiting..")
+            sys.exit(1)
+        # If returned path is not empty, then we update the movies_file class attribute to equal the path of the csv file,
         # and we save the path to the movies_file field in the yaml file for persistence and future runs
-        cls.movies_file = movies_path
-        paths['movies_file'] = str(movies_path)
+        cls.movies_file = movies_csv_path
+        paths['movies_file'] = str(movies_csv_path)
         with open("paths.yaml", "w") as paths_yml:
             yaml.safe_dump(paths, paths_yml)
             print(f"Saved movies csv file path to paths.yaml file")
@@ -103,6 +103,7 @@ class FilePaths:
     def set_file_paths(cls, paths):
         cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
         if paths['movies_file'] is None:
+            input("Press enter to choose your csv file containing your movies: ")
             cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
             return
         movies_file = Path(paths['movies_file'])
@@ -111,7 +112,7 @@ class FilePaths:
         if not movies_file.exists():
             print(f"{movies_file} is no longer a valid path.")
             print("This is most likely because you have moved the location of your movies csv file or renamed it.")
-            print("You will now be asked to specify the new full path to your movies csv file's new location.")
+            input("Press enter to specify the new location or name of your csv file: ")
             cls.get_user_movies_path(paths)
         else:
             cls.movies_file = str(movies_file)
