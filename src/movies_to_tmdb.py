@@ -103,6 +103,7 @@ class FilePaths:
     def set_file_paths(cls, paths):
         cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
         if paths['movies_file'] is None:
+            input("Press enter to choose your csv file containing your movies: ")
             cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
             return
         movies_file = Path(paths['movies_file'])
@@ -111,7 +112,7 @@ class FilePaths:
         if not movies_file.exists():
             print(f"{movies_file} is no longer a valid path.")
             print("This is most likely because you have moved the location of your movies csv file or renamed it.")
-            print("You will now be asked to specify the new full path to your movies csv file's new location.")
+            input("Press enter to specify the new location or name of your csv file: ")
             cls.get_user_movies_path(paths)
         else:
             cls.movies_file = str(movies_file)
