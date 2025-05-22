@@ -2,6 +2,7 @@ import csv
 import time
 import json
 import yaml
+from pathlib import Path
 from api_call_class import APICall
 
 class TMDBCredentials:
@@ -10,12 +11,12 @@ class TMDBCredentials:
     account_id = None
 
     @classmethod
-    def get_config(cls):
-        with open("settings.yaml", "r") as config_yml:
-            config_settings = yaml.safe_load(config_yml)
-        cls.read_access_token = config_settings['tmdb_read_access_token']
-        cls.write_access_token = config_settings['tmdb_write_access_token']
-        return config_settings
+    def get_secrets_config(cls):
+        with open("secrets.yaml", "r") as config_yml:
+            config_secrets = yaml.safe_load(config_yml)
+        cls.read_access_token = config_secrets['tmdb_read_access_token']
+        cls.write_access_token = config_secrets['tmdb_write_access_token']
+        return config_secrets
 
     @classmethod
     def get_account_id(cls):
@@ -54,29 +55,73 @@ class TMDBCredentials:
         print(f"Error retrieving access token: {response['status_message']}")
 
     @staticmethod
-    def update_config(config_settings, access_token):
-        config_settings['tmdb_write_access_token'] = access_token
-        with open("settings.yaml", "w") as config_yml:
-            yaml.safe_dump(config_settings, config_yml)
+    def update_config(config_secrets, access_token):
+        config_secrets['tmdb_write_access_token'] = access_token
+        with open("secrets.yaml", "w") as config_yml:
+            yaml.safe_dump(config_secrets, config_yml)
             print("Saved access token to yaml config file.")
 
     @classmethod
-    def get_tokens(cls, config_settings):
+    def get_tokens(cls, config_secrets):
         request_token = cls.get_req_token()
         cls.approve_req_token(request_token)
         access_token = cls.get_access_token(request_token)
         cls.write_access_token = access_token
-        cls.update_config(config_settings, access_token)
+        cls.update_config(config_secrets, access_token)
+
+class FilePaths:
+    tmdb_movie_ids_file = None
+    movies_file = None
+
+    @staticmethod
+    def load_paths_yaml():
+        with open("paths.yaml", "r") as paths_yml:
+            paths = yaml.safe_load(paths_yml)
+        return paths
+        
+    @classmethod
+    def get_user_movies_path(cls, paths):
+        while True:
+            movies_path = Path(input("Please enter the full path to your movies csv file: ").strip())
+            # Check if the file in the user provided path exists or not, or if it's a valid csv file
+            if not movies_path.exists():
+                print(f"{movies_path} does not exist. Please check the path again.")
+                continue
+            if movies_path.suffix.lower() != ".csv":
+                print(f"{movies_path} does not contain a valid csv file. File containing movies must be a csv file. Try again.")
+                continue
+            break
+        # If file does exist and is a csv file, then we update the movies_file class attribute to equal the user input path,
+        # and we save the path to the movies_file field in the yaml file for persistence and future runs
+        cls.movies_file = movies_path
+        paths['movies_file'] = str(movies_path)
+        with open("paths.yaml", "w") as paths_yml:
+            yaml.safe_dump(paths, paths_yml)
+            print(f"Saved movies csv file path to paths.yaml file")
+
+    @classmethod
+    def set_file_paths(cls, paths):
+        cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
+        if paths['movies_file'] is None:
+            cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
+            return
+        movies_file = Path(paths['movies_file'])
+        # If movies_file field is not empty but path is no longer valid, then ask user to specify new path,
+        # assuming they most likely moved the file or re-named
+        if not movies_file.exists():
+            print(f"{movies_file} is no longer a valid path.")
+            print("This is most likely because you have moved the location of your movies csv file or renamed it.")
+            print("You will now be asked to specify the new full path to your movies csv file's new location.")
+            cls.get_user_movies_path(paths)
+        else:
+            cls.movies_file = str(movies_file)
 
 # This class is meant to get the TMDB id's for each movie in the watched list,
 # so that we can add them to a custom TMDB list, for which we need the id of each movie.
-class TMDBMovieIDs(TMDBCredentials):
-    def __init__(self, watched_movies_file, tmdb_movie_ids_file):
-        self.watched_movies_file = watched_movies_file
-        self.tmdb_movie_ids_file = tmdb_movie_ids_file
-
-    def get_watched_movies(self):
-        with open(self.watched_movies_file, "r", encoding = 'utf-8') as movies_csv:
+class TMDBMovieIDs(TMDBCredentials, FilePaths):  
+    @classmethod
+    def get_watched_movies(cls):
+        with open(cls.movies_file,"r", encoding = 'utf-8') as movies_csv:
             # Add all movies from csv to watched_movies list as a dictionary
             watched_movies = []
             movies = csv.DictReader(movies_csv, delimiter = ";")
@@ -85,7 +130,8 @@ class TMDBMovieIDs(TMDBCredentials):
                 watched_movies.append(movie)
         return watched_movies
 
-    def get_tmdb_movie_ids(self, watched_movies): 
+    @staticmethod
+    def get_tmdb_movie_ids(watched_movies): 
         # Method to fetch any matches for watched movies, then filter out any fuzzy matches,
         # and save the tmdb id's for the exact matches along with the movie names
 
@@ -131,22 +177,24 @@ class TMDBMovieIDs(TMDBCredentials):
             time.sleep(1.0)
         return raw_tmdb_movie_ids
     
-    def save_movies(self, raw_tmdb_movie_ids): 
+    @classmethod
+    def save_movies(cls, raw_tmdb_movie_ids): 
         # Save results to json files for persistence and further processing + filtering
-        with open(self.tmdb_movie_ids_file, "w") as unique_movies_json:
+        with open(cls.tmdb_movie_ids_file, "w") as unique_movies_json:
             json.dump(raw_tmdb_movie_ids, unique_movies_json, indent = 4)
             print("Movies successfully saved.")
 
-    def get_and_save_movies(self): # Single method to do everything with one call
-        watched_movies = self.get_watched_movies()
-        raw_tmdb_movie_ids = self.get_tmdb_movie_ids(watched_movies)
-        self.save_movies(raw_tmdb_movie_ids)
+    @classmethod
+    def get_and_save_movies(cls): # Single method to do everything with one call
+        watched_movies = cls.get_watched_movies()
+        raw_tmdb_movie_ids = cls.get_tmdb_movie_ids(watched_movies)
+        cls.save_movies(raw_tmdb_movie_ids)
 
-    @staticmethod
-    def load_returned_movies(tmdb_movie_ids_file):
-        with open(tmdb_movie_ids_file, "r") as unique_movies_json:
-            unique_movies = json.load(unique_movies_json)
-        return unique_movies
+    @classmethod
+    def load_returned_movie_ids(cls):
+        with open(cls.tmdb_movie_ids_file, "r") as movie_ids_json:
+            movie_ids = json.load(movie_ids_json)
+        return movie_ids
     
 class TMDBLists(TMDBCredentials):
     @classmethod
@@ -200,8 +248,8 @@ class TMDBLists(TMDBCredentials):
         return user_list
     
     @classmethod
-    def add_movies_to_list(cls, list_name, list_id, tmdb_movie_ids_file):
-        movie_ids = TMDBMovieIDs.load_returned_movies(tmdb_movie_ids_file)
+    def add_movies_to_list(cls, list_name, list_id):
+        movie_ids = TMDBMovieIDs.load_returned_movie_ids()
         payload = {'items': []}
         for movie_id in movie_ids:
             movie_id_dictionary = {}
