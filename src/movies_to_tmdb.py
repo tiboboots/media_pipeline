@@ -102,7 +102,7 @@ class FilePaths:
     @classmethod
     def set_file_paths(cls, paths):
         cls.tmdb_movie_ids_file = paths['tmdb_movie_ids_file']
-        if paths['movies_file'] is None:
+        if not paths['movies_file']:
             input("Press enter to choose your csv file containing your movies: ")
             cls.get_user_movies_path(paths) # If movies_file field in yaml is empty, then ask user for path to their csv file
             return
