@@ -72,7 +72,7 @@ class TMDBCredentials:
         cls.update_config(config_secrets, access_token)
 
 class FilePaths:
-    tmdb_movie_ids_file = "tmdb_movie_ids_file.json"
+    tmdb_movie_ids_file = "tmdb_movie_ids.json"
     movies_file = None
 
     @staticmethod
