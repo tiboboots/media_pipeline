@@ -3,7 +3,7 @@ import time
 import json
 import yaml
 from pathlib import Path
-from api_call_class import APICall
+from .api_call_class import APICall
 from PyQt5.QtWidgets import QApplication, QFileDialog
 import sys
 
